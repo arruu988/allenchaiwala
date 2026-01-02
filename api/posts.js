@@ -1,21 +1,32 @@
-import axios from "axios";
+const axios = require("axios");
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
-    const SHEET_ID = "1Rok0vH5ZYY1QzV8A3BaLuf6LsiD_VYKspbjlPOUvmvk";
+    // Read Sheet ID from Vercel Environment Variable
+    const SHEET_ID = process.env.SHEET_ID;
     const SHEET_NAME = "Sheet1";
 
+    if (!SHEET_ID) {
+      return res.status(500).json({
+        success: false,
+        message: "SHEET_ID not set in environment variables"
+      });
+    }
+
+    // Fetch data from Google Sheet (via OpenSheet)
     const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
     const response = await axios.get(url);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       posts: response.data
     });
+
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to fetch blog posts"
+      message: "Failed to fetch blog posts",
+      error: error.message
     });
   }
-}
+};
